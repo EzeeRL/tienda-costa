@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "./carrito/carrito-context";
+import Provider from "./components/session-provider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={montserrat.variable}>
       <body className="antialiased pt-14">
-        <CartProvider>{children}</CartProvider>
+        <Provider>
+          <CartProvider>{children}</CartProvider>
+        </Provider>
       </body>
     </html>
   );
