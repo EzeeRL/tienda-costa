@@ -4,13 +4,15 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Image from "next/image";
+import Header from "../components/header";
+import "./login.css";
 
 export default function LoginPage() {
   const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated") router.push("/login");
+    if (status === "authenticated") router.push("/");
   }, [status, router]);
 
   if (status === "loading") {
@@ -22,34 +24,61 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#fafafa]">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-10 w-full max-w-md flex flex-col items-center gap-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Bienvenido</h1>
-          <p className="text-gray-500 mt-2 text-sm">
-            Iniciá sesión para continuar
-          </p>
+    <>
+      <Header />
+
+      <main className="login-page">
+        <div className="container-card-login">
+          {/* encabezado */}
+          <div className="container-sup">
+            <h1 className="title">Bienvenido</h1>
+            <p className="subtitle">
+              Iniciá sesión con tu cuenta o registrate para continuar
+            </p>
+          </div>
+
+          {/* formulario */}
+          <div className="container-login">
+            <div className="container-inputs">
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                className="inputs"
+              />
+
+              <input
+                type="password"
+                placeholder="Contraseña"
+                className="inputs"
+              />
+            </div>
+
+            <button className="button-login">Iniciar sesión</button>
+
+            <button className="button-register">Crear cuenta</button>
+
+            {/* separador */}
+            <div className="divider">
+              <span>o continuar con</span>
+            </div>
+
+            {/* google */}
+            <button onClick={() => signIn("google")} className="button-google">
+              <Image
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                width={20}
+                height={20}
+              />
+              Continuar con Google
+            </button>
+
+            <p className="terms">
+              Al iniciar sesión aceptás los términos y condiciones.
+            </p>
+          </div>
         </div>
-
-        <div className="w-full h-px bg-gray-100" />
-
-        <button
-          onClick={() => signIn("google")}
-          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-xl py-3 px-4 hover:bg-gray-50 transition font-medium text-sm"
-        >
-          <Image
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            width={20}
-            height={20}
-          />
-          Continuar con Google
-        </button>
-
-        <p className="text-xs text-gray-400 text-center">
-          Al iniciar sesión aceptás los términos y condiciones.
-        </p>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

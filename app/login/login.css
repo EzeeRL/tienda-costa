@@ -1,0 +1,117 @@
+.login-page {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container-card-login {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 32px;
+}
+
+.container-sup {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.container-login {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.container-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inputs {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.button-login {
+  background: #000;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.button-login:hover {
+    transform: scale(1.03);
+}
+
+.button-register {
+  background: #fff;
+  border: 1px solid #000;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.button-register:hover {
+    transform: scale(1.03);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #888;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.button-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.button-google:hover {
+    transform: scale(1.03);
+}
+
+.terms {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+}
