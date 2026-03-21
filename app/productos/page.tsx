@@ -2,28 +2,44 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import Header from "../components/header";
 import { products } from "@/app/lib/products";
 
 export default function ProductosPage() {
-  const [genderFilter, setGenderFilter] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  const [genderFilter, setGenderFilter] = useState<string>("both");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
+  useEffect(() => {
+    const typeFromUrl = searchParams.get("type");
+    const genderFromUrl = searchParams.get("gender");
+
+    if (typeFromUrl) setTypeFilter(typeFromUrl);
+    if (genderFromUrl) setGenderFilter(genderFromUrl);
+    else setGenderFilter("both");
+  }, [searchParams]);
+
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const genderMatch = genderFilter ? p.gender === genderFilter : true;
+      const genderMatch =
+        genderFilter === "both" ? true : p.gender === genderFilter;
+
       const typeMatch = typeFilter ? p.type === typeFilter : true;
+
       const searchMatch = p.name.toLowerCase().includes(search.toLowerCase());
+
       return genderMatch && typeMatch && searchMatch;
     });
   }, [genderFilter, typeFilter, search]);
 
   const clearFilters = () => {
-    setGenderFilter(null);
+    setGenderFilter("both");
     setTypeFilter(null);
   };
 
@@ -35,14 +51,14 @@ export default function ProductosPage() {
         <h1 className="text-3xl font-bold mb-8">Productos</h1>
 
         {/* BUSCADOR */}
-        <div className="sticky top-24 bg-white z-20 pb-6">
+        <div className="mb-6">
           <div className="flex gap-3">
             <input
               type="text"
               placeholder="Buscar productos..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black bg-white"
             />
             <button
               onClick={() => setMobileFiltersOpen(true)}
@@ -71,7 +87,9 @@ export default function ProductosPage() {
           <section className="flex-1 flex flex-col h-[calc(100vh-220px)]">
             <div className="overflow-y-auto pr-2 flex-1">
               {filteredProducts.length === 0 ? (
-                <p className="text-gray-500">No hay productos con esos filtros.</p>
+                <p className="text-gray-500">
+                  No hay productos con esos filtros.
+                </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredProducts.map((product) => (
@@ -88,8 +106,11 @@ export default function ProductosPage() {
                           className="object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
+
                       <div className="p-4">
-                        <h3 className="font-semibold text-lg">{product.name}</h3>
+                        <h3 className="font-semibold text-lg">
+                          {product.name}
+                        </h3>
                         <p className="text-gray-600 mt-1">{product.price}</p>
                         <span className="text-sm text-gray-400 capitalize">
                           {product.type}
@@ -116,6 +137,7 @@ export default function ProductosPage() {
           onClick={() => setMobileFiltersOpen(false)}
           className="absolute inset-0 bg-black/40"
         />
+
         <div
           className={`absolute top-0 left-0 h-full w-72 bg-white p-6 transform transition-transform duration-300 ${
             mobileFiltersOpen ? "translate-x-0" : "-translate-x-full"
@@ -147,8 +169,12 @@ function Filters({
     <div className="space-y-8 mt-12">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Categorías</h2>
+
         {closeFilters && (
-          <button onClick={closeFilters} className="p-2 rounded-md hover:bg-gray-100">
+          <button
+            onClick={closeFilters}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
             <X size={20} />
           </button>
         )}
@@ -158,21 +184,61 @@ function Filters({
       <div>
         <h3 className="font-medium mb-3">Género</h3>
         <div className="flex flex-col gap-2">
+          {/* 🔥 NUEVO: AMBOS */}
           <button
-            onClick={() => { setGenderFilter("men"); closeFilters?.(); }}
+            onClick={() => {
+              setGenderFilter("both");
+              closeFilters?.();
+            }}
             className={`text-left px-3 py-2 rounded-md ${
-              genderFilter === "men" ? "bg-black text-white" : "hover:bg-gray-100"
+              genderFilter === "both"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            Ambos
+          </button>
+
+          <button
+            onClick={() => {
+              setGenderFilter("men");
+              closeFilters?.();
+            }}
+            className={`text-left px-3 py-2 rounded-md ${
+              genderFilter === "men"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
             }`}
           >
             Hombre
           </button>
+
           <button
-            onClick={() => { setGenderFilter("women"); closeFilters?.(); }}
+            onClick={() => {
+              setGenderFilter("women");
+              closeFilters?.();
+            }}
             className={`text-left px-3 py-2 rounded-md ${
-              genderFilter === "women" ? "bg-black text-white" : "hover:bg-gray-100"
+              genderFilter === "women"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
             }`}
           >
             Mujer
+          </button>
+
+          <button
+            onClick={() => {
+              setGenderFilter("kids");
+              closeFilters?.();
+            }}
+            className={`text-left px-3 py-2 rounded-md ${
+              genderFilter === "kids"
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            Niños
           </button>
         </div>
       </div>
@@ -184,9 +250,14 @@ function Filters({
           {["buzos", "remeras", "zapatillas", "vestidos"].map((type) => (
             <button
               key={type}
-              onClick={() => { setTypeFilter(type); closeFilters?.(); }}
+              onClick={() => {
+                setTypeFilter(type);
+                closeFilters?.();
+              }}
               className={`text-left px-3 py-2 rounded-md capitalize ${
-                typeFilter === type ? "bg-black text-white" : "hover:bg-gray-100"
+                typeFilter === type
+                  ? "bg-black text-white"
+                  : "hover:bg-gray-100"
               }`}
             >
               {type}
@@ -196,7 +267,10 @@ function Filters({
       </div>
 
       <button
-        onClick={() => { clearFilters(); closeFilters?.(); }}
+        onClick={() => {
+          clearFilters();
+          closeFilters?.();
+        }}
         className="w-full bg-black text-white py-2 rounded-md"
       >
         Limpiar filtros

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/carrito/carrito-context";
+import "./add-to-cart-buttons.css"
 
 type Props = {
   product: {
@@ -60,7 +61,7 @@ export default function AddToCartButtons({ product }: Props) {
             <button
               key={size}
               onClick={() => { setSelectedSize(size); setError(false); }}
-              className={`border px-4 py-2 transition-colors rounded-sm ${
+              className={`border px-4 py-2 transition-colors rounded-sm hover:cursor-pointer ${
                 selectedSize === size
                   ? "bg-black text-white"
                   : "hover:bg-black hover:text-white"
@@ -78,14 +79,14 @@ export default function AddToCartButtons({ product }: Props) {
       <div className="flex flex-col gap-3">
         <button
           onClick={handleAdd}
-          className="bg-black text-white py-3 font-medium hover:scale-105 transition-transform rounded-sm"
+          className="bg-black text-white py-3 font-medium hover:cursor-pointer transition-transform rounded-sm buttons"
         >
           Agregar al carrito
         </button>
 
         <button
           onClick={handleBuyNow}
-          className="border border-black py-3 font-medium hover:bg-gray-100 transition-colors rounded-sm"
+          className="border border-black py-3 font-medium hover:bg-gray-100 hover:cursor-pointer transition-colors rounded-sm buttons"
         >
           Comprar ahora
         </button>
