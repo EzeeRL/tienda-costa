@@ -22,7 +22,7 @@ export default function GeneroCategories() {
         {categorias.map((cat, i) => (
           <div
             key={i}
-            onClick={() => handleRedirect(cat.type)}
+            onClick={() => handleRedirect(cat.gender)}
             className="group relative cursor-pointer overflow-hidden flex-1 aspect-[3/4] md:aspect-auto md:h-[580px]"
           >
             <img
