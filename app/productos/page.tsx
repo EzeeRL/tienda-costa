@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import Header from "../components/header";
 import { products } from "@/app/lib/products";
 
-export default function ProductosPage() {
+// ─── Inner component that uses useSearchParams ────────────────────────────────
+function ProductosContent() {
   const searchParams = useSearchParams();
 
   const [genderFilter, setGenderFilter] = useState<string>("both");
@@ -29,11 +30,8 @@ export default function ProductosPage() {
     return products.filter((p) => {
       const genderMatch =
         genderFilter === "both" ? true : p.gender === genderFilter;
-
       const typeMatch = typeFilter ? p.type === typeFilter : true;
-
       const searchMatch = p.name.toLowerCase().includes(search.toLowerCase());
-
       return genderMatch && typeMatch && searchMatch;
     });
   }, [genderFilter, typeFilter, search]);
@@ -45,8 +43,6 @@ export default function ProductosPage() {
 
   return (
     <>
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold mb-8">Productos</h1>
 
@@ -106,11 +102,8 @@ export default function ProductosPage() {
                           className="object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-
                       <div className="p-4">
-                        <h3 className="font-semibold text-lg">
-                          {product.name}
-                        </h3>
+                        <h3 className="font-semibold text-lg">{product.name}</h3>
                         <p className="text-gray-600 mt-1">{product.price}</p>
                         <span className="text-sm text-gray-400 capitalize">
                           {product.type}
@@ -137,7 +130,6 @@ export default function ProductosPage() {
           onClick={() => setMobileFiltersOpen(false)}
           className="absolute inset-0 bg-black/40"
         />
-
         <div
           className={`absolute top-0 left-0 h-full w-72 bg-white p-6 transform transition-transform duration-300 ${
             mobileFiltersOpen ? "translate-x-0" : "-translate-x-full"
@@ -157,6 +149,40 @@ export default function ProductosPage() {
   );
 }
 
+// ─── Page — wraps content in Suspense (required for useSearchParams) ──────────
+export default function ProductosPage() {
+  return (
+    <>
+      <Header />
+      <Suspense fallback={<ProductosSkeleton />}>
+        <ProductosContent />
+      </Suspense>
+    </>
+  );
+}
+
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+function ProductosSkeleton() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="h-9 w-40 bg-gray-200 rounded-lg mb-8 animate-pulse" />
+      <div className="h-12 bg-gray-200 rounded-lg mb-6 animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="h-64 bg-gray-200 animate-pulse" />
+            <div className="p-4 space-y-2">
+              <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Filters component ────────────────────────────────────────────────────────
 function Filters({
   genderFilter,
   typeFilter,
@@ -164,12 +190,25 @@ function Filters({
   setTypeFilter,
   clearFilters,
   closeFilters,
-}: any) {
+}: {
+  genderFilter: string;
+  typeFilter: string | null;
+  setGenderFilter: (v: string) => void;
+  setTypeFilter: (v: string | null) => void;
+  clearFilters: () => void;
+  closeFilters?: () => void;
+}) {
+  const genders = [
+    { value: "both", label: "Ambos" },
+    { value: "men", label: "Hombre" },
+    { value: "women", label: "Mujer" },
+    { value: "kids", label: "Niños" },
+  ];
+
   return (
     <div className="space-y-8 mt-12">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Categorías</h2>
-
         {closeFilters && (
           <button
             onClick={closeFilters}
@@ -180,66 +219,26 @@ function Filters({
         )}
       </div>
 
-      {/* GENERO */}
+      {/* GÉNERO */}
       <div>
         <h3 className="font-medium mb-3">Género</h3>
         <div className="flex flex-col gap-2">
-          {/* 🔥 NUEVO: AMBOS */}
-          <button
-            onClick={() => {
-              setGenderFilter("both");
-              closeFilters?.();
-            }}
-            className={`text-left px-3 py-2 rounded-md ${
-              genderFilter === "both"
-                ? "bg-black text-white"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            Ambos
-          </button>
-
-          <button
-            onClick={() => {
-              setGenderFilter("men");
-              closeFilters?.();
-            }}
-            className={`text-left px-3 py-2 rounded-md ${
-              genderFilter === "men"
-                ? "bg-black text-white"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            Hombre
-          </button>
-
-          <button
-            onClick={() => {
-              setGenderFilter("women");
-              closeFilters?.();
-            }}
-            className={`text-left px-3 py-2 rounded-md ${
-              genderFilter === "women"
-                ? "bg-black text-white"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            Mujer
-          </button>
-
-          <button
-            onClick={() => {
-              setGenderFilter("kids");
-              closeFilters?.();
-            }}
-            className={`text-left px-3 py-2 rounded-md ${
-              genderFilter === "kids"
-                ? "bg-black text-white"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            Niños
-          </button>
+          {genders.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => {
+                setGenderFilter(value);
+                closeFilters?.();
+              }}
+              className={`text-left px-3 py-2 rounded-md ${
+                genderFilter === value
+                  ? "bg-black text-white"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -255,9 +254,7 @@ function Filters({
                 closeFilters?.();
               }}
               className={`text-left px-3 py-2 rounded-md capitalize ${
-                typeFilter === type
-                  ? "bg-black text-white"
-                  : "hover:bg-gray-100"
+                typeFilter === type ? "bg-black text-white" : "hover:bg-gray-100"
               }`}
             >
               {type}
