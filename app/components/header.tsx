@@ -38,6 +38,7 @@ export default function Header() {
           <Link href="/" className="hover:scale-105 transition">Inicio</Link>
           <Link href="/productos" className="hover:scale-105 transition">Productos</Link>
           <Link href="" className="hover:scale-105 transition">Contáctanos</Link>
+          <Link href="/dashboard" className="hover:scale-105 transition">Admin</Link>
         </nav>
 
         {/* Desktop - derecha */}
