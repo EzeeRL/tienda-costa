@@ -6,9 +6,8 @@ import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import Header from "../components/header";
-import { products } from "@/app/lib/products";
+import { getProducts } from "../lib/api/products";
 
-// ─── Inner component that uses useSearchParams ────────────────────────────────
 function ProductosContent() {
   const searchParams = useSearchParams();
 
@@ -16,25 +15,60 @@ function ProductosContent() {
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // 👉 leer params de URL
   useEffect(() => {
     const typeFromUrl = searchParams.get("type");
     const genderFromUrl = searchParams.get("gender");
 
-    if (typeFromUrl) setTypeFilter(typeFromUrl);
+    if (typeFromUrl) setTypeFilter(typeFromUrl.toLowerCase());
     if (genderFromUrl) setGenderFilter(genderFromUrl);
     else setGenderFilter("both");
   }, [searchParams]);
 
+  // 👉 traer productos del backend
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await getProducts();
+
+        console.log("PRODUCTOS BACK:", data);
+
+        const normalized = data.map((p: any) => ({
+          ...p,
+          type: p.category ? p.category.toLowerCase() : "", // 🔥 CLAVE
+          gender: "both",
+        }));
+
+        setProducts(normalized);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  // 👉 filtro CORREGIDO
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const genderMatch =
         genderFilter === "both" ? true : p.gender === genderFilter;
-      const typeMatch = typeFilter ? p.type === typeFilter : true;
-      const searchMatch = p.name.toLowerCase().includes(search.toLowerCase());
+
+      const typeMatch =
+        !typeFilter || p.type === typeFilter;
+
+      const searchMatch = p.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
+
       return genderMatch && typeMatch && searchMatch;
     });
-  }, [genderFilter, typeFilter, search]);
+  }, [products, genderFilter, typeFilter, search]);
 
   const clearFilters = () => {
     setGenderFilter("both");
@@ -66,7 +100,7 @@ function ProductosContent() {
         </div>
 
         <div className="flex gap-8">
-          {/* SIDEBAR DESKTOP */}
+          {/* SIDEBAR */}
           <aside className="hidden md:block w-64">
             <div className="sticky top-28 border-r border-gray-200 pr-4">
               <Filters
@@ -82,7 +116,9 @@ function ProductosContent() {
           {/* PRODUCTOS */}
           <section className="flex-1 flex flex-col h-[calc(100vh-220px)]">
             <div className="overflow-y-auto pr-2 flex-1">
-              {filteredProducts.length === 0 ? (
+              {loading ? (
+                <p className="text-gray-500">Cargando productos...</p>
+              ) : filteredProducts.length === 0 ? (
                 <p className="text-gray-500">
                   No hay productos con esos filtros.
                 </p>
@@ -96,17 +132,25 @@ function ProductosContent() {
                     >
                       <div className="relative w-full h-64 bg-[#faf7f7]">
                         <Image
-                          src={product.image}
+                          src={product.image || "/placeholder.png"}
                           alt={product.name}
                           fill
+                          unoptimized // 🔥 evita error de dominios externos
                           className="object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
+
                       <div className="p-4">
-                        <h3 className="font-semibold text-lg">{product.name}</h3>
-                        <p className="text-gray-600 mt-1">{product.price}</p>
+                        <h3 className="font-semibold text-lg">
+                          {product.name}
+                        </h3>
+
+                        <p className="text-gray-600">
+                          ${Number(product.price).toLocaleString("es-AR")}
+                        </p>
+
                         <span className="text-sm text-gray-400 capitalize">
-                          {product.type}
+                          {product.type || "sin categoría"}
                         </span>
                       </div>
                     </Link>
@@ -118,7 +162,7 @@ function ProductosContent() {
         </div>
       </div>
 
-      {/* FILTROS MOBILE */}
+      {/* MOBILE FILTERS */}
       <div
         className={`fixed inset-0 z-40 transition-opacity duration-300 ${
           mobileFiltersOpen
@@ -130,6 +174,7 @@ function ProductosContent() {
           onClick={() => setMobileFiltersOpen(false)}
           className="absolute inset-0 bg-black/40"
         />
+
         <div
           className={`absolute top-0 left-0 h-full w-72 bg-white p-6 transform transition-transform duration-300 ${
             mobileFiltersOpen ? "translate-x-0" : "-translate-x-full"
@@ -149,7 +194,6 @@ function ProductosContent() {
   );
 }
 
-// ─── Page — wraps content in Suspense (required for useSearchParams) ──────────
 export default function ProductosPage() {
   return (
     <>
@@ -161,28 +205,17 @@ export default function ProductosPage() {
   );
 }
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
+// skeleton
 function ProductosSkeleton() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       <div className="h-9 w-40 bg-gray-200 rounded-lg mb-8 animate-pulse" />
       <div className="h-12 bg-gray-200 rounded-lg mb-6 animate-pulse" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
-            <div className="h-64 bg-gray-200 animate-pulse" />
-            <div className="p-4 space-y-2">
-              <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3" />
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
 
-// ─── Filters component ────────────────────────────────────────────────────────
+// filtros
 function Filters({
   genderFilter,
   typeFilter,
@@ -190,77 +223,28 @@ function Filters({
   setTypeFilter,
   clearFilters,
   closeFilters,
-}: {
-  genderFilter: string;
-  typeFilter: string | null;
-  setGenderFilter: (v: string) => void;
-  setTypeFilter: (v: string | null) => void;
-  clearFilters: () => void;
-  closeFilters?: () => void;
-}) {
-  const genders = [
-    { value: "both", label: "Ambos" },
-    { value: "men", label: "Hombre" },
-    { value: "women", label: "Mujer" },
-    { value: "kids", label: "Niños" },
-  ];
-
+}: any) {
   return (
-    <div className="space-y-8 mt-12">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Categorías</h2>
-        {closeFilters && (
+    <div className="space-y-6 mt-12">
+      <h2 className="text-xl font-semibold">Filtros</h2>
+
+      <div className="flex flex-col gap-2">
+        {["buzos", "remeras", "zapatillas", "vestidos"].map((type) => (
           <button
-            onClick={closeFilters}
-            className="p-2 rounded-md hover:bg-gray-100"
+            key={type}
+            onClick={() => {
+              setTypeFilter(type);
+              closeFilters?.();
+            }}
+            className={`px-3 py-2 rounded-md ${
+              typeFilter === type
+                ? "bg-black text-white"
+                : "hover:bg-gray-100"
+            }`}
           >
-            <X size={20} />
+            {type}
           </button>
-        )}
-      </div>
-
-      {/* GÉNERO */}
-      <div>
-        <h3 className="font-medium mb-3">Género</h3>
-        <div className="flex flex-col gap-2">
-          {genders.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => {
-                setGenderFilter(value);
-                closeFilters?.();
-              }}
-              className={`text-left px-3 py-2 rounded-md ${
-                genderFilter === value
-                  ? "bg-black text-white"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* TIPO */}
-      <div>
-        <h3 className="font-medium mb-3">Tipo</h3>
-        <div className="flex flex-col gap-2">
-          {["buzos", "remeras", "zapatillas", "vestidos"].map((type) => (
-            <button
-              key={type}
-              onClick={() => {
-                setTypeFilter(type);
-                closeFilters?.();
-              }}
-              className={`text-left px-3 py-2 rounded-md capitalize ${
-                typeFilter === type ? "bg-black text-white" : "hover:bg-gray-100"
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
       <button

@@ -1,16 +1,50 @@
+"use client";
+
 import Header from "@/app/components/header";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import AddToCartButtons from "./add-to-cart-buttons";
-import { products } from "@/app/lib/products";
+import { getProducts } from "@/app/lib/api/products";
 
-export default async function ProductDetail({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const product = products.find((p) => p.id === Number(id));
+export default function ProductDetail() {
+  const params = useParams();
+  const id = params.id;
+
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        const data = await getProducts();
+
+        // 🔥 buscar el producto en el array
+        const found = data.find((p: any) => String(p.id) === String(id));
+
+        if (!found) {
+          setProduct(null);
+        } else {
+          setProduct(found);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="p-10">Cargando producto...</div>
+      </>
+    );
+  }
 
   if (!product) return notFound();
 
@@ -22,9 +56,10 @@ export default async function ProductDetail({
         {/* Imagen */}
         <div className="relative w-full h-[500px] rounded-xl overflow-hidden bg-[#faf7f7]">
           <Image
-            src={product.image}
+            src={product.image || "/placeholder.png"}
             alt={product.name}
             fill
+            unoptimized
             className="object-contain"
           />
         </div>
@@ -34,8 +69,14 @@ export default async function ProductDetail({
           <h1 className="text-3xl md:text-4xl font-semibold mb-4">
             {product.name}
           </h1>
-          <p className="text-2xl font-medium mb-6">{product.price}</p>
-          <p className="text-gray-600 mb-8">{product.description}</p>
+
+          <p className="text-2xl font-medium mb-6">
+            ${Number(product.price).toLocaleString("es-AR")}
+          </p>
+
+          <p className="text-gray-600 mb-8">
+            {product.description || "Sin descripción"}
+          </p>
 
           <AddToCartButtons
             product={{
@@ -43,7 +84,7 @@ export default async function ProductDetail({
               name: product.name,
               price: product.price,
               image: product.image,
-              sizes: product.sizes,
+              sizes: product.sizes || [],
             }}
           />
         </div>
