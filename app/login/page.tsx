@@ -6,9 +6,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Header from "../components/header";
 import "./login.css";
-import { loginUser, registerUser } from "../lib/api/auth";
+import { registerUser } from "../lib/api/auth";
 
-// 🔥 tipos
 type FormType = {
   name: string;
   email: string;
@@ -18,8 +17,8 @@ type FormType = {
 export default function LoginPage() {
   const router = useRouter();
 
-  const [isRegister, setIsRegister] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isRegister, setIsRegister] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState<FormType>({
     name: "",
@@ -27,38 +26,33 @@ export default function LoginPage() {
     password: "",
   });
 
-  // 🔥 setter tipado
   const set = (k: keyof FormType, v: string) =>
     setForm((prev) => ({ ...prev, [k]: v }));
 
-  // 🔐 submit
   const handleSubmit = async () => {
     try {
       setLoading(true);
 
+      // 🆕 REGISTRO
       if (isRegister) {
         await registerUser(form);
-        alert("Usuario creado correctamente");
+      }
 
-        // auto login
-        await loginUser({
-          email: form.email,
-          password: form.password,
-        });
-      } else {
-        await loginUser({
-          email: form.email,
-          password: form.password,
-        });
+      // 🔐 LOGIN REAL (NEXTAUTH)
+      const res = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        alert("Credenciales incorrectas");
+        return;
       }
 
       router.push("/");
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("Error desconocido");
-      }
+      alert("Error");
     } finally {
       setLoading(false);
     }
@@ -70,7 +64,6 @@ export default function LoginPage() {
 
       <main className="login-page">
         <div className="container-card-login">
-          {/* encabezado */}
           <div className="container-sup">
             <h1 className="title">
               {isRegister ? "Crear cuenta" : "Bienvenido"}
@@ -83,10 +76,8 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* formulario */}
           <div className="container-login">
             <div className="container-inputs">
-              {/* nombre solo en register */}
               {isRegister && (
                 <input
                   type="text"
@@ -126,7 +117,6 @@ export default function LoginPage() {
                 : "Iniciar sesión"}
             </button>
 
-            {/* toggle */}
             <button
               onClick={() => setIsRegister(!isRegister)}
               className="button-register"
@@ -134,12 +124,10 @@ export default function LoginPage() {
               {isRegister ? "Ya tengo cuenta" : "Crear cuenta"}
             </button>
 
-            {/* separador */}
             <div className="divider">
               <span>o continuar con</span>
             </div>
 
-            {/* google */}
             <button onClick={() => signIn("google")} className="button-google">
               <Image
                 src="https://www.svgrepo.com/show/475656/google-color.svg"

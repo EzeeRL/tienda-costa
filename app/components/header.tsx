@@ -9,26 +9,41 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const { data: session } = useSession();
 
-  const UserIcon = () =>
-    session?.user?.image ? (
-<Link href="/perfil">
-  <Image
-    src={session.user.image}
-    alt={session.user.name ?? "Usuario"}
-    width={32}
-    height={32}
-    style={{ borderRadius: "50%", objectFit: "cover" }}
-    className="hover:scale-105 transition"
-  />
-</Link>
-    ) : (
-      <Link href="/login" className="hover:scale-105 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="7" r="4" />
-          <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-        </svg>
-      </Link>
-    );
+const UserIcon = () =>
+  session?.user ? (
+    <Link href="/perfil">
+      {session.user.image ? (
+        <Image
+          src={session.user.image}
+          alt={session.user.name ?? "Usuario"}
+          width={32}
+          height={32}
+          style={{ borderRadius: "50%", objectFit: "cover" }}
+          className="hover:scale-105 transition"
+        />
+      ) : (
+        // 👇 fallback sin imagen
+        <div className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white text-sm font-semibold">
+          {session.user.name?.charAt(0).toUpperCase() || "U"}
+        </div>
+      )}
+    </Link>
+  ) : (
+    <Link href="/login" className="hover:scale-105 transition">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <circle cx="12" cy="7" r="4" />
+        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+      </svg>
+    </Link>
+  );
 
   return (
     <header className="fixed top-0 left-0 w-full bg-white border-b border-gray-900 z-50">
