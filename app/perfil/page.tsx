@@ -31,7 +31,7 @@ export default function PerfilPage() {
       <main className="max-w-2xl mx-auto px-4 py-16">
         <div className="bg-white border border-gray-200 rounded-2xl p-8 flex flex-col items-center gap-6 shadow-sm">
           {/* Avatar */}
-          <Image
+          <img
             src={session.user?.image ?? ""}
             alt={session.user?.name ?? "Usuario"}
             width={96}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import "./header.css";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -47,7 +48,7 @@ const UserIcon = () =>
 
   return (
     <header className="fixed top-0 left-0 w-full bg-white border-b border-gray-900 z-50">
-      <div className="mx-auto h-14 flex items-center justify-between px-4">
+      <div className="mx-auto h-14 flex items-center justify-between container">
         {/* Desktop - izquierda */}
         <nav className="hidden md:flex gap-8 items-center">
           <Link href="/" className="hover:scale-105 transition">Inicio</Link>

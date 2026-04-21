@@ -6,7 +6,7 @@ import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AddToCartButtons from "./add-to-cart-buttons";
 import { getProducts } from "@/app/lib/api/products";
-
+import CheckoutModal from "@/app/components/CheckoutModal";
 export default function ProductDetail() {
   const params = useParams();
   const id = params.id;
@@ -87,6 +87,7 @@ export default function ProductDetail() {
               sizes: product.sizes || [],
             }}
           />
+          <CheckoutModal product={product} />
         </div>
       </main>
     </>
